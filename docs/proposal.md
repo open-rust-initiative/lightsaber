@@ -8,141 +8,25 @@ By integrating this library, developers can define specific functions, structure
 
 > Developers using Lightsaber:
 >
-> 1. Import this rust library
-> 2. Define functions (abilities)
-> 3. Define syntax
-> 4. Build and release his program
+> 1. Define functions (abilities)
+> 2. Define syntax
+> 3. Use Lightsaber to generate a parser in Rust
+> 4. Embed the generated parser into his own Rust program
 >
 > Users:
 >
-> 1. Download the precompiled program and use it as an "language interpreter"
-> 2. **Write his own logic (in a simpler way) to achieve specific goals**
+> 1. **Write his own logic (in a simpler way) to achieve specific goals**
 
 #### Ideas
 
-What we need is a language that falls between a full-featured programming language(e.g. Python, Javascript...) and pure data definition(e.g. JSON, Yaml...). We implement the framework for this language in Rust, and allow developers who use our project as a library to extend the framework of this language with functions defined in Rust.
+This project aims to implement a language interpreter generator in Rust. However, it will feature a simpler yet more powerful syntax than ANTLR g4, making it easier for developers to define their own simple scripting languages and embed the generated parser into their own programs.
 
-#### Parts
+#### TODOs
 
-1. A simple configuration language parser, which should include advanced features such as variables, conditional judgments, loops, and function calls
-2. A binding implementation of the configuration language to Rust
-3. An interface that allows developers to define functions flexibly
+1. Find a simple method to define syntax
+2. Find a method to define semantics for the syntax
+3. Generate corresponding Rust parser
 
 #### Inspiration & Reference
 
-##### Nginx
-
-- Configuration file with custom syntax
-  Supports **Directives**, **Blocks**, **Contexts**, **Variables**
-
-  ```nginx
-  http {
-      # Define a variable
-      set $backend "localhost:8080";
-
-      server {
-          listen 80;
-          server_name localhost;
-
-          location / {
-              # Use the variable in the proxy_pass directive
-              proxy_pass http://$backend;
-          }
-
-          location ~* \.(jpg|jpeg|png|gif|ico|css|js)$ {
-              expires 30d;
-              access_log off;
-              try_files $uri @backend;
-          }
-
-          location @backend {
-              proxy_pass http://$backend;
-          }
-      }
-  }
-  ```
-
-- Support Lua Module
-
-##### Terraform\*
-
-- Has its own configuration language (HCL)
-
-- https://developer.hashicorp.com/terraform/language
-
-- **Resource blocks**, **Variables**, **Outputs**
-
-- Also Functions, Math calculation, Conditions
-
-  ```hcl
-  terraform {
-    required_providers {
-      cloudflare = {
-        source  = "cloudflare/cloudflare"
-        version = "~> 4"
-      }
-    }
-  }
-
-  variable "CLOUDFLARE_ACCOUNT_ID" {
-    # read account id from $TF_VAR_CLOUDFLARE_ACCOUNT_ID
-    type = string
-  }
-
-  resource "cloudflare_workers_kv_namespace" "uptimeflare_kv" {
-    account_id = var.CLOUDFLARE_ACCOUNT_ID
-    title      = "uptimeflare_kv"
-  }
-
-  resource "cloudflare_worker_script" "uptimeflare" {
-    account_id         = var.CLOUDFLARE_ACCOUNT_ID
-    name               = "uptimeflare_worker"
-    content            = file("worker/dist/index.js")
-    module             = true
-    compatibility_date = "2023-11-08"
-
-    kv_namespace_binding {
-      name         = "UPTIMEFLARE_STATE"
-      namespace_id = cloudflare_workers_kv_namespace.uptimeflare_kv.id
-    }
-  }
-
-  resource "cloudflare_pages_project" "uptimeflare" {
-    account_id        = var.CLOUDFLARE_ACCOUNT_ID
-    name              = "uptimeflare"
-    production_branch = "main"
-
-    deployment_configs {
-      production {
-        kv_namespaces = {
-          UPTIMEFLARE_STATE = cloudflare_workers_kv_namespace.uptimeflare_kv.id
-        }
-        compatibility_date  = "2023-11-08"
-        compatibility_flags = ["nodejs_compat"]
-      }
-    }
-  }
-  ```
-
-  HCL(https://github.com/hashicorp/hcl) closely aligns with our vision:
-
-  > Newcomers to HCL often ask: why not JSON, YAML, etc?
-  >
-  > Whereas JSON and YAML are formats for serializing data structures, HCL is a syntax and API specifically designed for building structured configuration formats.
-  >
-  > HCL attempts to strike a compromise between generic serialization formats such as JSON and configuration formats built around full programming languages such as Ruby. HCL syntax is designed to be easily read and written by humans, and allows _declarative_ logic to permit its use in more complex applications.
-
-  and HCL was once the language used by GitHub workflow: https://github.blog/2019-02-07-an-open-source-parser-for-github-actions/#the-actions-workflow-language
-
-##### Frida
-
-- https://github.com/orgs/frida/repositories?type=all
-
-- Create (or Auto-generate) bindings for different languages (Python, Javascript, Swift...)
-
-- ...Or embed lightweight Javascript engines, e.g. https://bellard.org/quickjs/
-  > QuickJS is a small and embeddable Javascript engine. It supports the [ES2023](https://tc39.github.io/ecma262/2023) specification including modules, asynchronous generators, proxies and BigInt.
-  > It optionally supports mathematical extensions such as big decimal floating point numbers (BigDecimal), big binary floating point numbers (BigFloat) and **operator overloading**.
-  >
-  > - Can compile Javascript sources to executables with no external dependency.
-  > - Small built-in standard library with C library wrappers.
+Integrating the code we generate into downstream projects is similar to adding Lua script support in Nginx. However, the difference is that you can freely define your own language according to your preferences and needs, not just limited to using existing languages such as Lua, Javascript, etc.
