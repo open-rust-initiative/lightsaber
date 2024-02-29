@@ -2,31 +2,64 @@
 
 #### Design Target
 
-This project is a Rust library designed to enable developers to define a series of functionalities. These functionalities can then be used by downstream users to define their own code logic and develop in a manner similar to using a programming language, thereby facilitating a more intuitive and flexible development process.
+This project can be used as a Rust library, allowing developers to define their own scripting languages and integrate them into their projects. This includes defining the syntax and using Rust code to establish the logic.
 
 By integrating this library, developers can define specific functions, structures, and interfaces, along with a simple syntax for their custom language. The end result is a simple language interpreter that can be provided to other users. The unique syntax and behavior of this custom language are defined by the developers themselves, using the Rust language.
 
-> Developers using Lightsaber:
->
-> 1. Define functions (abilities)
-> 2. Define syntax
-> 3. Use Lightsaber to generate a parser in Rust
-> 4. Embed the generated parser into his own Rust program
->
-> Users:
->
-> 1. **Write his own logic (in a simpler way) to achieve specific goals**
+```mermaid
+graph LR
+    A[Developers] --> B[Define Functions and Logic]
+    A --> C[Define Syntax]
+    B --> D[Lightsaber]
+    C --> D
+    D --> E[Generate Parser in Rust]
+    E --> F[Custom logic implemented]
+    G[Users] --> H[Write Logic in Simpler Way]
+    H --> F
+```
 
 #### Ideas
 
-This project aims to implement a language interpreter generator in Rust. However, it will feature a simpler yet more powerful syntax than ANTLR g4, making it easier for developers to define their own simple scripting languages and embed the generated parser into their own programs.
-
-#### TODOs
-
-1. Find a simple method to define syntax
-2. Find a method to define semantics for the syntax
-3. Generate corresponding Rust parser
-
-#### Inspiration & Reference
+There are already some mature parser generators such as ANTLR. However, using ANTLR requires developers to have substantial relevant experience. Our project does not use the BNF method to define syntax, but instead provides a selection of common templates for developers to choose from. Additionally, we generate an interpreter, so users don't need to write code to traverse the AST.
 
 Integrating the code we generate into downstream projects is similar to adding Lua script support in Nginx. However, the difference is that you can freely define your own language according to your preferences and needs, not just limited to using existing languages such as Lua, Javascript, etc.
+
+#### Example
+
+##### Var declaration
+
+```yaml
+lightsaber:
+  var_decl:
+    style: var # Choose var, let or none here
+```
+
+```javascript
+var a = 1;
+let b = 1;
+c = 1;
+```
+
+##### Var declaration
+
+```yaml
+lightsaber:
+  ident:
+    style: ident # Choose ident, block, begin-end here
+```
+
+```javascript
+// ident
+if flag:
+    print "Hello"
+
+// block
+if (flag) {
+    print "Hello"
+}
+
+// begin-end
+if flag begin
+    print "Hello"
+end
+```
