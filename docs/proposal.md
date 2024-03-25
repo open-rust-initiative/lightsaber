@@ -38,6 +38,17 @@ lightsaber:
 var a = 1;
 let b = 1;
 c = 1;
+
+
+123  => int
+"123"  => string
+true  => bool
+
+
+
+
+d = "123" & 123
+
 ```
 
 ##### Code block
@@ -62,4 +73,10 @@ if (flag) {
 if flag begin
     print "Hello"
 end
+```
+
+```yaml
+
+
+
 ```
