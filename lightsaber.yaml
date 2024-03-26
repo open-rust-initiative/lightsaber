@@ -1,0 +1,4 @@
+grammar:
+  block: brace  # brace, begin-end
+  func_def: fn  # func, fn, def
+  var_decl: let  # let, var, empty

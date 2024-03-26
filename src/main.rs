@@ -1,49 +1,40 @@
-use pest::Parser;
-use pest_derive::Parser;
-
-#[derive(Parser)]
-#[grammar = "ini.pest"]
-pub struct INIParser;
-
-// pub mod ini;
-// use ini::INIParser;
-
-use std::collections::HashMap;
+mod gen;
 use std::fs;
 
+use antlr_rust::token_factory::CommonTokenFactory;
+use antlr_rust::tree::ParseTreeListener;
+use antlr_rust::InputStream;
+use antlr_rust::{common_token_stream::CommonTokenStream, tree::ParseTree};
+use gen::lslexer::lsLexer;
+use gen::lsparser::lsParser;
+
+use crate::gen::lsparser::ruleNames;
+use crate::gen::{
+    lsparser::{lsParserContext, lsParserContextType},
+    lsparserlistener::lsParserListener,
+};
+
 fn main() {
-    let unparsed_file = fs::read_to_string("config.ini").expect("cannot read file");
+    let src_file = fs::read_to_string("test.ls").expect("cannot read file");
 
-    let file = INIParser::parse(Rule::file, &unparsed_file)
-        .expect("unsuccessful parse") // unwrap the parse result
-        .next()
-        .unwrap(); // get and unwrap the `file` rule; never fails
+    let tf = CommonTokenFactory::default();
+    let mut _lexer = lsLexer::new_with_token_factory(InputStream::new(src_file.as_str()), &tf);
+    let token_source = CommonTokenStream::new(_lexer);
 
-    let mut properties: HashMap<&str, HashMap<&str, &str>> = HashMap::new();
+    let mut parser = lsParser::new(token_source);
 
-    let mut current_section_name = "";
-
-    for line in file.into_inner() {
-        match line.as_rule() {
-            Rule::section => {
-                let mut inner_rules = line.into_inner(); // { name }
-                current_section_name = inner_rules.next().unwrap().as_str();
-            }
-            Rule::property => {
-                let mut inner_rules = line.into_inner(); // { name ~ "=" ~ value }
-
-                let name: &str = inner_rules.next().unwrap().as_str();
-                let value: &str = inner_rules.next().unwrap().as_str();
-
-                // Insert an empty inner hash map if the outer hash map hasn't
-                // seen this section name before.
-                let section = properties.entry(current_section_name).or_default();
-                section.insert(name, value);
-            }
-            Rule::EOI => (),
-            _ => unreachable!(),
+    struct Listener {}
+    impl<'input> ParseTreeListener<'input, lsParserContextType> for Listener {
+        fn enter_every_rule(&mut self, ctx: &dyn lsParserContext<'input>) {
+            println!(
+                "rule entered {}",
+                ruleNames.get(ctx.get_rule_index()).unwrap_or(&"error")
+            )
         }
     }
+    impl<'input> lsParserListener<'input> for Listener {}
 
-    println!("{:#?}", properties);
+    parser.add_parse_listener(Box::new(Listener {}));
+    let result = parser.program();
+    println!("{}", result.unwrap().to_string_tree(&*parser));
 }
