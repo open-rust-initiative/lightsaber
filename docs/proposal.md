@@ -40,11 +40,11 @@ let b = 1;
 c = 1;
 ```
 
-##### Var declaration
+##### Code block
 
 ```yaml
 lightsaber:
-  ident:
+  block:
     style: ident # Choose ident, block, begin-end here
 ```
 
@@ -62,4 +62,10 @@ if (flag) {
 if flag begin
     print "Hello"
 end
+```
+
+```yaml
+
+
+
 ```
